@@ -453,4 +453,24 @@ class AgentController {
   }
 }
 
-module.exports = new AgentController();
+const agentController = new AgentController();
+
+// Bind methods to preserve 'this' context when used in routes
+agentController.processNaturalQuery = agentController.processNaturalQuery.bind(agentController);
+agentController.searchProperties = agentController.searchProperties.bind(agentController);
+agentController.recommendProperties = agentController.recommendProperties.bind(agentController);
+agentController.valuateProperty = agentController.valuateProperty.bind(agentController);
+agentController.analyzeMarket = agentController.analyzeMarket.bind(agentController);
+agentController.getRecommendedAgents = agentController.getRecommendedAgents.bind(agentController);
+agentController.getCapabilities = agentController.getCapabilities.bind(agentController);
+agentController.executeSkill = agentController.executeSkill.bind(agentController);
+agentController.getSkills = agentController.getSkills.bind(agentController);
+agentController.parseQueryIntent = agentController.parseQueryIntent.bind(agentController);
+agentController.extractSearchCriteria = agentController.extractSearchCriteria.bind(agentController);
+agentController.extractLocation = agentController.extractLocation.bind(agentController);
+agentController.extractPropertyType = agentController.extractPropertyType.bind(agentController);
+agentController.extractPropertyDetails = agentController.extractPropertyDetails.bind(agentController);
+agentController.extractAgentCriteria = agentController.extractAgentCriteria.bind(agentController);
+agentController.extractBookingDetails = agentController.extractBookingDetails.bind(agentController);
+
+module.exports = agentController;

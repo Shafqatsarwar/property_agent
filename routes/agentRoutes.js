@@ -82,7 +82,8 @@ router.post('/login', async (req, res) => {
 // GET agent profile (requires authentication)
 router.get('/profile', authenticateAgent, async (req, res) => {
   try {
-    const agent = await Agent.findById(req.agentId).select('-password');
+    const agentQuery = Agent.findById(req.agentId).select('-password');
+    const agent = await agentQuery.exec();
     if (!agent) {
       return res.status(404).json({ error: 'Agent not found' });
     }
@@ -96,11 +97,12 @@ router.get('/profile', authenticateAgent, async (req, res) => {
 // UPDATE agent profile (requires authentication)
 router.put('/profile', authenticateAgent, async (req, res) => {
   try {
-    const agent = await Agent.findByIdAndUpdate(
+    const agentQuery = Agent.findByIdAndUpdate(
       req.agentId,
       req.body,
       { new: true, runValidators: true }
     ).select('-password');
+    const agent = await agentQuery.exec();
 
     if (!agent) {
       return res.status(404).json({ error: 'Agent not found' });
@@ -122,11 +124,12 @@ router.get('/', async (req, res) => {
     if (agencyName) query.agencyName = new RegExp(agencyName, 'i');
     if (specialty) query.specialties = { $in: [specialty] };
 
-    const agents = await Agent.find(query)
+    const agentsQuery = Agent.find(query)
       .select('-password')
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .sort({ rating: -1 });
+    const agents = await agentsQuery.exec();
 
     const total = await Agent.countDocuments(query);
 
@@ -144,7 +147,8 @@ router.get('/', async (req, res) => {
 // GET agent by ID
 router.get('/:id', async (req, res) => {
   try {
-    const agent = await Agent.findById(req.params.id).select('-password');
+    const agentQuery = Agent.findById(req.params.id).select('-password');
+    const agent = await agentQuery.exec();
     if (!agent) {
       return res.status(404).json({ error: 'Agent not found' });
     }

@@ -18,11 +18,12 @@ router.get('/', async (req, res) => {
     if (maxPrice) query.price = { ...query.price, $lte: maxPrice };
     if (city) query['address.city'] = city;
 
-    const properties = await Property.find(query)
+    const propertiesQuery = Property.find(query)
       .populate('agentId', 'firstName lastName email phone')
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .sort({ listedDate: -1 });
+    const properties = await propertiesQuery.exec();
 
     const total = await Property.countDocuments(query);
 
@@ -40,8 +41,9 @@ router.get('/', async (req, res) => {
 // GET property by ID
 router.get('/:id', async (req, res) => {
   try {
-    const property = await Property.findById(req.params.id)
+    const propertyQuery = Property.findById(req.params.id)
       .populate('agentId', 'firstName lastName email phone bio');
+    const property = await propertyQuery.exec();
 
     if (!property) {
       return res.status(404).json({ error: 'Property not found' });
@@ -105,8 +107,9 @@ router.delete('/:id', authenticateAgent, async (req, res) => {
 // GET properties by agent
 router.get('/agent/:agentId', async (req, res) => {
   try {
-    const properties = await Property.find({ agentId: req.params.agentId })
+    const propertiesQuery = Property.find({ agentId: req.params.agentId })
       .populate('agentId', 'firstName lastName email phone');
+    const properties = await propertiesQuery.exec();
 
     res.json(properties);
   } catch (error) {

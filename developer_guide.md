@@ -13,7 +13,7 @@
 10. [Development Tips](#development-tips)
 
 ## Overview
-The Property Real Estate Agent is a comprehensive real estate management system with both standalone capabilities and AI-assisted features. The system supports property management, agent management, market analysis, and AI-powered assistance.
+The Property Real Estate Agent is a comprehensive real estate management system with both standalone capabilities and AI-assisted features. The system supports property management, agent management, market analysis, AI-powered assistance, and an integrated skills system. The main agent can operate with or without AI assistance and leverages sub-agents with different tools and skills for specialized tasks. MCP (Model Context Protocol) tools collect, manage data, and maintain property catalogs for the main agent to use.
 
 ## Prerequisites
 - Node.js v16 or higher
@@ -124,6 +124,17 @@ startup.bat
 - `GET /api/agents/recommended-agents` - Recommended agents
 - `GET /api/agents/search` - Enhanced property search
 
+### Skills System
+- `GET /api/agents/skills` - Get available skills
+- `POST /api/agents/skills/execute` - Execute a skill with parameters
+- `GET /api/agents/skills/:skillName` - Get details about a specific skill
+
+### Sub-Agent Features (Tools & Data Collection)
+- `POST /api/tools/data-collect` - Collect property and market data
+- `POST /api/tools/catalog-update` - Update property catalog
+- `POST /api/tools/customer-interact` - Customer interaction tools
+- `POST /api/tools/booking-system` - Booking and appointment management
+
 ### AI Assistant Features
 - `POST /api/ai/chat` - AI chat interface
 - `POST /api/ai/recommend` - AI property recommendations
@@ -134,12 +145,15 @@ startup.bat
 - `POST /api/ui/query` - Web UI query processing
 - `GET /api/ui/capabilities` - Web UI capabilities
 
-### MCP Server (if enabled)
+### MCP Server (if enabled) - Data Collection & Catalog Management
 - `GET /mcp/providers` - List available providers
 - `GET /mcp/providers/:providerId/context-items` - Get context items
 - `GET /mcp/providers/:providerId/items/:itemId` - Get specific item
 - `GET /mcp/providers/:providerId/stats` - Get provider stats
 - `GET /mcp/health` - Health check
+- `GET /mcp/providers/property-catalog/context-items` - Property catalog data
+- `GET /mcp/providers/agent-info/context-items` - Agent information data
+- `GET /mcp/providers/market-data/context-items` - Market data
 
 ## Web UI Usage
 
@@ -161,6 +175,10 @@ startup.bat
 - "Recommend an agent specializing in luxury homes"
 - "Value this property: 4BR, 2BA, 2500 sq ft, built in 2015, located in Denver"
 - "Show properties with pool and garage"
+- "Schedule a property viewing for tomorrow at 2 PM"
+- "Collect data on new listings in Miami"
+- "Update property catalog with recent sales"
+- "Connect me with a customer to discuss property purchase"
 
 ### Web UI Navigation
 1. **Input Section**: Type queries or use pre-built prompts
@@ -286,12 +304,80 @@ npm run test -- --watch
 - Check server logs in console for error messages
 - Verify all dependencies are installed with npm install
 
+## Skills System and Tools
+
+The system includes a modular skill system with specialized tools for data collection, customer management, and booking. The main agent coordinates with sub-agents that have different tools and skills to efficiently manage real estate operations:
+
+### Core Skills
+- **propertySearch**: Search for properties based on various criteria
+- **propertyValuation**: Estimate property value based on characteristics  
+- **agentFinder**: Find appropriate real estate agents
+- **marketAnalyzer**: Analyze real estate market trends
+- **bookingSystem**: Manage property viewings, agent meetings, and appointments
+- **dataCollector**: Gathers property listings, market trends, and pricing data
+- **catalogManager**: Maintains and updates property catalogs
+- **customerInteraction**: Manages customer communications and inquiries
+
+### Sub-Agent Architecture
+The system uses a main agent that coordinates with specialized sub-agents:
+- **Main Agent**: Orchestrates operations and manages sub-agents
+- **Property Sub-Agent**: Specializes in property searches and valuations
+- **Agent Sub-Agent**: Focuses on agent matching and recommendations  
+- **Market Sub-Agent**: Handles market analysis and trends
+- **Booking Sub-Agent**: Manages scheduling and appointment systems
+- **Data Sub-Agent**: Specializes in data collection and catalog management
+
+### Data Collection & Management Tools
+- **Data Collector**: Gathers property listings, market trends, and pricing data
+- **Catalog Manager**: Maintains and updates property catalogs
+- **Customer Interaction**: Manages customer communications and inquiries
+- **Booking System**: Handles scheduling and appointment management
+- **Market Analyzer**: Collects and analyzes market data
+- **Agent Matcher**: Finds appropriate agents for specific needs
+
+### MCP Integration for Data Management
+The MCP (Model Context Protocol) system collects and manages data through specialized providers:
+- **Property Catalog Provider**: Maintains property listings and details
+- **Agent Information Provider**: Stores agent profiles and specialties
+- **Market Data Provider**: Collects and serves market trends and analytics
+- **Data Collection Tools**: Automated gathering of new listings and market data
+- **Catalog Management**: Automatic updates to property information
+
+The main agent coordinates with sub-agents that specialize in different tools and skills to efficiently manage real estate operations. The system can operate autonomously without AI assistance while maintaining full functionality.
+
+## Autonomous Operation & AI Independence
+
+The system is designed to operate effectively without AI assistance:
+
+### Standalone Capabilities
+- **Property Search**: Full property search functionality without AI
+- **Agent Matching**: Agent recommendations based on criteria
+- **Market Analysis**: Basic market trend analysis using available data
+- **Booking System**: Complete appointment scheduling without AI
+- **Data Collection**: Automated gathering of property information
+- **Catalog Management**: Property catalog maintenance and updates
+
+### AI Integration Options
+- **Enhanced Recommendations**: AI-powered property and agent suggestions
+- **Advanced Analytics**: Deeper market analysis with AI insights
+- **Natural Language Processing**: Improved query understanding
+- **Fallback Handling**: Automatic switching to standalone mode when AI unavailable
+
+### Sub-Agent Coordination
+The main agent coordinates with specialized sub-agents:
+- Each sub-agent has specific tools and skills
+- Sub-agents can operate independently or collaboratively
+- Load balancing between sub-agents for optimal performance
+- Failover capabilities between sub-agents
+
 ## Development Tips
 
 ### 1. Development Workflow
 - Use `npm run dev` for auto-reload during development
 - Create feature branches for new functionality
 - Test both standalone and AI-assisted modes
+- Verify sub-agent coordination functionality
+- Ensure autonomous operation without AI
 
 ### 2. Adding New Features
 - Follow existing code patterns and conventions
@@ -304,13 +390,21 @@ npm run test -- --watch
 - Use database indexing appropriately
 - Optimize API responses for speed
 
-### 4. Security Considerations
+### 4. Tools and Data Collection Features
+- **Data Collection Tools**: Automated gathering of property listings and market data
+- **Catalog Management**: Real-time updates to property catalogs
+- **Customer Interaction Tools**: Management of customer communications and inquiries
+- **Booking Systems**: Scheduling and appointment management tools
+- **Market Analysis Tools**: Collection and analysis of market trends
+- **Agent Matching Tools**: Specialized algorithms for agent-client matching
+
+### 5. Security Considerations
 - Always validate and sanitize user inputs
 - Use parameterized queries to prevent injection
 - Implement proper authentication for sensitive operations
 - Regularly update dependencies
 
-### 5. Environment Management
+### 6. Environment Management
 - Use different .env files for different environments
 - Never commit .env files to version control
 - Use environment variables for configuration

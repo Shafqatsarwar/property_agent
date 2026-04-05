@@ -1,6 +1,7 @@
 // models/Agent.js
 const memoryDB = require('./MemoryDB');
 const bcrypt = require('bcryptjs');
+const Property = require('./Property'); // Import Property at the top to avoid circular dependencies
 
 // Mock Mongoose-like interface for in-memory DB
 class AgentModel {
@@ -8,173 +9,226 @@ class AgentModel {
     this.name = 'Agent';
   }
 
-  async find(query = {}, projection = null) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const results = memoryDB.findAgents(query);
+  find(query = {}, projection = null) {
+    // Return a query-like object that supports method chaining
+    const queryObj = {
+      _query: query,
+      _operations: [],
 
-        // Create results with select method attached to simulate Mongoose functionality
-        const resultWithSelect = {
-          map: (fn) => results.map(fn),
-          slice: (start, end) => results.slice(start, end),
-          select: (fields) => {
-            if (fields === '-password') {
-              return results.map(agent => {
-                const { password, ...withoutPassword } = agent;
-                return withoutPassword;
-              });
-            }
-            return results;
+      exec: async () => {
+        let results = memoryDB.findAgents(query);
+
+        // Process operations in order
+        for (const op of queryObj._operations) {
+          if (op.type === 'limit') {
+            results = results.slice(0, op.value);
+          } else if (op.type === 'skip') {
+            results = results.slice(op.value);
+          } else if (op.type === 'sort') {
+            const [[sortField, sortOrder]] = Object.entries(op.value);
+            results = results.sort((a, b) => {
+              if (a[sortField] < b[sortField]) return sortOrder < 0 ? 1 : -1;
+              if (a[sortField] > b[sortField]) return sortOrder < 0 ? -1 : 1;
+              return 0;
+            });
+          } else if (op.type === 'select' && op.fields === '-password') {
+            results = results.map(agent => {
+              const { password, ...withoutPassword } = agent;
+              return withoutPassword;
+            });
           }
-        };
-
-        // Also attach select to individual results
-        const processedResults = results.map(agent => {
-          return {
-            ...agent,
-            select: (fields) => {
-              if (fields === '-password') {
-                const { password, ...withoutPassword } = agent;
-                return withoutPassword;
-              }
-              return agent;
-            }
-          };
-        });
-
-        resolve(processedResults);
-      }, 0);
-    });
-  }
-
-  // Add select method to simulate Mongoose functionality
-  select(fields) {
-    // This is a placeholder to satisfy the .select() call
-    // In a real implementation, this would handle field selection
-    return this;
-  }
-
-  async findById(id) {
-    const result = memoryDB.findAgentById(id);
-
-    // Return an object that simulates Mongoose document with select method
-    return {
-      ...result,
-      select: function(fields) {
-        if (result && fields === '-password') {
-          const { password, ...withoutPassword } = result;
-          return withoutPassword;
         }
-        return result;
+
+        return results;
+      },
+
+      limit: function(count) {
+        this._operations.push({ type: 'limit', value: count });
+        return this;
+      },
+
+      skip: function(count) {
+        this._operations.push({ type: 'skip', value: count });
+        return this;
+      },
+
+      sort: function(sortOptions) {
+        this._operations.push({ type: 'sort', value: sortOptions });
+        return this;
+      },
+
+      select: function(fields) {
+        this._operations.push({ type: 'select', fields });
+        return this;
       }
     };
+
+    return queryObj;
   }
 
-  async findOne(query) {
-    let result;
-    if (query.email) {
-      result = memoryDB.findAgentByEmail(query.email);
-    } else {
-      const results = memoryDB.findAgents(query);
-      result = results[0] || null;
-    }
+  findById(id) {
+    // Return a query-like object that supports method chaining
+    const queryObj = {
+      _id: id,
+      _operations: [],
 
-    // Return an object that simulates Mongoose document with select method
-    if (result) {
-      return {
-        ...result,
-        select: function(fields) {
-          if (fields === '-password') {
+      exec: async () => {
+        let result = memoryDB.findAgentById(id);
+
+        // Process operations in order
+        for (const op of queryObj._operations) {
+          if (op.type === 'select' && op.fields === '-password' && result) {
             const { password, ...withoutPassword } = result;
-            return withoutPassword;
+            result = withoutPassword;
           }
-          return result;
         }
-      };
-    }
-    return null;
-  }
 
-  async findByIdAndUpdate(id, update, options = {}) {
-    const result = memoryDB.updateAgent(id, update);
+        return result;
+      },
 
-    // Return an object that simulates Mongoose document with select method
-    if (result) {
-      const resultWithSelect = {
-        ...result,
-        select: function(fields) {
-          if (fields === '-password') {
-            const { password, ...withoutPassword } = result;
-            return withoutPassword;
-          }
-          return result;
-        }
-      };
-
-      if (options.new) {
-        return resultWithSelect;
-      } else {
-        return update;
+      select: function(fields) {
+        this._operations.push({ type: 'select', fields });
+        return this;
       }
-    }
-    return null;
+    };
+
+    return queryObj;
   }
 
-  async create(data) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        // Hash password before creating agent
-        bcrypt.hash(data.password, 10, (err, hashedPassword) => {
-          if (err) {
-            console.error('Error hashing password:', err);
-            resolve(null);
-            return;
-          }
+  findOne(query) {
+    // Return a query-like object that supports method chaining
+    const queryObj = {
+      _query: query,
+      _operations: [],
 
-          const agentData = { ...data, password: hashedPassword };
-          const result = memoryDB.createAgent(agentData);
-          resolve(result);
+      exec: async () => {
+        let result;
+        if (query.email) {
+          result = memoryDB.findAgentByEmail(query.email);
+        } else {
+          const results = memoryDB.findAgents(query);
+          result = results[0] || null;
+        }
+
+        // Process operations in order
+        for (const op of queryObj._operations) {
+          if (op.type === 'select' && op.fields === '-password' && result) {
+            const { password, ...withoutPassword } = result;
+            result = withoutPassword;
+          }
+        }
+
+        return result;
+      },
+
+      select: function(fields) {
+        this._operations.push({ type: 'select', fields });
+        return this;
+      }
+    };
+
+    return queryObj;
+  }
+
+  findByIdAndUpdate(id, update, options = {}) {
+    // Return a query-like object that supports method chaining
+    const queryObj = {
+      _id: id,
+      _update: update,
+      _options: options,
+      _operations: [],
+
+      exec: async () => {
+        let result = memoryDB.updateAgent(id, update);
+
+        if (result) {
+          if (options.new) {
+            // Process operations in order
+            for (const op of queryObj._operations) {
+              if (op.type === 'select' && op.fields === '-password') {
+                const { password, ...withoutPassword } = result;
+                result = withoutPassword;
+              }
+            }
+            return result;
+          } else {
+            return update;
+          }
+        }
+        return null;
+      },
+
+      select: function(fields) {
+        this._operations.push({ type: 'select', fields });
+        return this;
+      }
+    };
+
+    return queryObj;
+  }
+
+  create(data) {
+    // Return a query-like object that supports method chaining
+    const queryObj = {
+      _data: data,
+      _operations: [],
+
+      exec: async () => {
+        return new Promise(resolve => {
+          setTimeout(() => {
+            // Hash password before creating agent
+            bcrypt.hash(data.password, 10, (err, hashedPassword) => {
+              if (err) {
+                console.error('Error hashing password:', err);
+                resolve(null);
+                return;
+              }
+
+              const agentData = { ...data, password: hashedPassword };
+              const result = memoryDB.createAgent(agentData);
+              resolve(result);
+            });
+          }, 0);
         });
-      }, 0);
-    });
+      },
+
+      select: function(fields) {
+        // For create, we don't typically need to select specific fields to exclude
+        return this;
+      }
+    };
+
+    return queryObj;
   }
 
   async countDocuments(query = {}) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const results = memoryDB.findAgents(query);
-        resolve(results.length);
-      }, 0);
-    });
+    const results = memoryDB.findAgents(query);
+    return results.length;
   }
 
   async aggregate(pipeline) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        // Simplified aggregation for demo purposes
-        let results = [...memoryDB.agents];
+    // Simplified aggregation for demo purposes
+    let results = [...memoryDB.agents];
 
-        for (const stage of pipeline) {
-          if (stage.$match) {
-            // Apply match filter
-            results = memoryDB.findAgents(stage.$match);
-          } else if (stage.$group) {
-            // Simplified group operation
-            const groupedResult = {
-              _id: null,
-              totalAgents: results.length,
-              avgRating: results.reduce((sum, agent) => sum + agent.rating, 0) / results.length || 0,
-              avgSales: results.reduce((sum, agent) => sum + agent.totalSales, 0) / results.length || 0,
-              avgExperience: results.reduce((sum, agent) => sum + agent.yearsExperience, 0) / results.length || 0,
-              specialties: Array.from(new Set(results.flatMap(agent => agent.specialties)))
-            };
-            results = [groupedResult];
-          }
-        }
+    for (const stage of pipeline) {
+      if (stage.$match) {
+        // Apply match filter
+        results = memoryDB.findAgents(stage.$match);
+      } else if (stage.$group) {
+        // Simplified group operation
+        const groupedResult = {
+          _id: null,
+          totalAgents: results.length,
+          avgRating: results.reduce((sum, agent) => sum + agent.rating, 0) / results.length || 0,
+          avgSales: results.reduce((sum, agent) => sum + agent.totalSales, 0) / results.length || 0,
+          avgExperience: results.reduce((sum, agent) => sum + agent.yearsExperience, 0) / results.length || 0,
+          specialties: Array.from(new Set(results.flatMap(agent => agent.specialties)))
+        };
+        results = [groupedResult];
+      }
+    }
 
-        resolve(results);
-      }, 0);
-    });
+    return results;
   }
 }
 

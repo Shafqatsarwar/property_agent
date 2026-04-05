@@ -4,7 +4,7 @@ const router = express.Router();
 const agentController = require('../controllers/agentController');
 
 // Route to handle general queries from the web UI
-router.post('/webui/query', async (req, res) => {
+router.post('/query', async (req, res) => {
   try {
     const { query, mode = 'auto' } = req.body;
 
@@ -29,14 +29,10 @@ router.post('/webui/query', async (req, res) => {
 });
 
 // Route to get agent capabilities for the UI
-router.get('/webui/capabilities', async (req, res) => {
+router.get('/capabilities', async (req, res) => {
   try {
-    const capabilities = await agentController.getCapabilities(req, {
-      json: (data) => data,
-      status: (code) => ({ code, json: (data) => ({ code, data }) })
-    });
-
-    res.json(capabilities);
+    const capabilities = await agentController.getCapabilities(req, res);
+    // getCapabilities handles the response itself, so we don't need to do res.json here
   } catch (error) {
     console.error('Web UI capabilities error:', error);
     res.status(500).json({ error: error.message });

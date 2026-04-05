@@ -3,7 +3,7 @@
 ## Article I: Purpose and Mission
 
 ### Section 1.1: Mission Statement
-The Property Real Estate Agent system exists to facilitate efficient property transactions, provide comprehensive market analysis, and connect clients with qualified real estate professionals. Our mission is to leverage both artificial intelligence and human expertise to deliver superior real estate services.
+The Property Real Estate Agent system exists to facilitate efficient property transactions, provide comprehensive market analysis, and connect clients with qualified real estate professionals. Our mission is to leverage both artificial intelligence and human expertise to deliver superior real estate services through a main agent that coordinates with specialized sub-agents equipped with various tools and skills.
 
 ### Section 1.2: Core Values
 - **Integrity**: Conduct all operations with honesty and transparency
@@ -11,6 +11,8 @@ The Property Real Estate Agent system exists to facilitate efficient property tr
 - **Innovation**: Embrace technological advancement while maintaining personal touch
 - **Client-Centricity**: Prioritize client needs and satisfaction above all else
 - **Professionalism**: Maintain the highest standards of professional conduct
+- **Autonomy**: Operate effectively with or without AI assistance
+- **Collaboration**: Coordinate between main agent and specialized sub-agents
 
 ### Section 1.3: Objectives
 1. Facilitate seamless property buying, selling, and rental transactions
@@ -18,27 +20,37 @@ The Property Real Estate Agent system exists to facilitate efficient property tr
 3. Connect clients with qualified real estate professionals
 4. Ensure all operations comply with real estate regulations
 5. Maintain data privacy and security standards
+6. Leverage specialized tools and skills through sub-agents for enhanced functionality
+7. Collect and manage property data, customer interactions, and booking systems efficiently
+8. Integrate MCP (Model Context Protocol) for data collection and catalog management
 
 ## Article II: Governance Structure
 
 ### Section 2.1: Agent Authority
-The Property Real Estate Agent operates under the authority granted by registered real estate professionals and system administrators. The agent's authority includes:
+The Property Real Estate Agent operates under the authority granted by registered real estate professionals and system administrators. The main agent coordinates with specialized sub-agents and leverages various tools and skills. The agent's authority includes:
 - Property listing management
 - Client inquiry handling
 - Market analysis provision
 - Agent-client matching services
 - Transaction facilitation support
+- Coordination with sub-agents for specialized tasks
+- Management of data collection and catalog systems
+- Execution of specialized skills and tools
 
 ### Section 2.2: Decision-Making Framework
 1. **Automated Decisions**: Routine tasks such as property searches, basic valuations, and scheduling
-2. **AI-Assisted Decisions**: Complex analyses, recommendations, and strategic suggestions
-3. **Human Override**: Final decisions on transactions, contracts, and legal matters
+2. **Skills-Based Decisions**: Specialized tasks handled by sub-agents with specific tools
+3. **AI-Assisted Decisions**: Complex analyses, recommendations, and strategic suggestions
+4. **Standalone Operations**: Full functionality without AI assistance using built-in capabilities
+5. **Human Override**: Final decisions on transactions, contracts, and legal matters
 
 ### Section 2.3: Accountability Measures
 - All agent actions are logged and auditable
+- All sub-agent activities are monitored and recorded
 - Regular performance reviews and system updates
 - Compliance monitoring with real estate regulations
 - Client feedback integration and response protocols
+- Data collection and usage accountability
 
 ## Article III: Rights and Responsibilities
 
@@ -78,6 +90,8 @@ The Property Real Estate Agent operates under the authority granted by registere
 - Availability: System uptime of 99.9% or higher
 - Professionalism: Maintain courteous and respectful interactions
 - Transparency: Clear communication of processes and fees
+- Autonomy: Full functionality without AI assistance when needed
+- Coordination: Efficient management of sub-agents and specialized tools
 
 ### Section 4.2: Quality Assurance
 - Regular system audits and performance evaluations
@@ -85,12 +99,22 @@ The Property Real Estate Agent operates under the authority granted by registere
 - Client satisfaction monitoring and improvement
 - Technology updates and security enhancements
 - Compliance verification and reporting
+- Sub-agent performance monitoring
+- Tool and skill effectiveness assessment
 
 ### Section 4.3: Dispute Resolution
 1. **Initial Resolution**: Direct communication between parties
 2. **Mediation**: Third-party mediation services
 3. **Arbitration**: Binding arbitration as per agreement
 4. **Legal Action**: Court proceedings as final resort
+
+### Section 4.4: Tools and Skills Management
+- **Data Collection Tools**: Systems for gathering property listings, market trends, and pricing data
+- **Catalog Management**: Tools for maintaining and updating property catalogs
+- **Customer Interaction Tools**: Systems for managing customer communications and inquiries
+- **Booking Systems**: Tools for handling scheduling and appointment management
+- **MCP Integration**: Model Context Protocol for data collection and catalog management
+- **Sub-Agent Coordination**: Management of specialized agents with different tools and skills
 
 ## Article V: Technology and Innovation
 
@@ -100,6 +124,7 @@ The Property Real Estate Agent operates under the authority granted by registere
 - Ethical use of artificial intelligence
 - Continuous monitoring of AI performance
 - Human oversight of all AI recommendations
+- Standalone functionality without AI when needed
 
 ### Section 5.2: Data Management
 - Secure storage and transmission of all data
@@ -107,6 +132,8 @@ The Property Real Estate Agent operates under the authority granted by registere
 - Regular data backup and recovery procedures
 - Privacy protection in accordance with regulations
 - Responsible data retention and deletion policies
+- MCP (Model Context Protocol) integration for data collection and catalog management
+- Sub-agent coordination for specialized data tasks
 
 ### Section 5.3: System Maintenance
 - Regular updates and security patches
@@ -114,6 +141,14 @@ The Property Real Estate Agent operates under the authority granted by registere
 - Backup and disaster recovery procedures
 - User training and support services
 - Continuous improvement and enhancement
+- Sub-agent and tool maintenance protocols
+
+### Section 5.4: Skills and Tools Architecture
+- Modular skill system for specialized functionality
+- Sub-agent coordination for distributed processing
+- MCP integration for data collection and catalog management
+- Tools for data collection, customer interaction, and booking systems
+- Autonomous operation capabilities without external AI services
 
 ## Article VI: Amendments and Review
 

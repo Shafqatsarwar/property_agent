@@ -4,7 +4,14 @@
       "Bash(node:*)",
       "Bash(curl -s http://localhost:3000/api/agents/capabilities)",
       "Bash(powershell:*)",
-      "Bash(python -m json.tool)"
+      "Bash(python -m json.tool)",
+      "Bash(curl -s http://localhost:3000/api/agents/skills)",
+      "Bash(curl:*)",
+      "Bash(dir:*)",
+      "Bash(fsutil file:*)",
+      "Bash(tasklist)",
+      "Bash(findstr node:*)",
+      "Bash(taskkill:*)"
     ]
   }
 }

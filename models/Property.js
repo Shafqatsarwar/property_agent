@@ -1,5 +1,6 @@
 // models/Property.js
 const memoryDB = require('./MemoryDB');
+const Agent = require('./Agent'); // Import Agent at the top to avoid circular dependencies
 
 // Mock Mongoose-like interface for in-memory DB
 class PropertyModel {
@@ -7,26 +8,132 @@ class PropertyModel {
     this.name = 'Property';
   }
 
-  async find(query = {}, projection = null) {
-    // Simulate async operation
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const results = memoryDB.findProperties(query);
+  find(query = {}, projection = null) {
+    // Return a query-like object that supports method chaining
+    const queryObj = {
+      _query: query,
+      _operations: [],
 
-        // Add populate method to simulate Mongoose populate functionality
-        const populatedResults = results.map(property => {
-          return {
-            ...property,
-            populate: async function(path, fields) {
-              if (path === 'agentId') {
-                // Simulate populating agent information
-                const Agent = require('./Agent'); // Get the Agent model
-                const agent = await Agent.findById(property.agentId);
+      exec: async () => {
+        let results = memoryDB.findProperties(query);
 
-                if (agent && fields === 'firstName lastName email phone') {
-                  // Return only the requested fields
-                  return {
-                    ...property,
+        // Process operations in order
+        for (const op of queryObj._operations) {
+          if (op.type === 'limit') {
+            results = results.slice(0, op.value);
+          } else if (op.type === 'skip') {
+            results = results.slice(op.value);
+          } else if (op.type === 'sort') {
+            const [[sortField, sortOrder]] = Object.entries(op.value);
+            results = results.sort((a, b) => {
+              if (a[sortField] < b[sortField]) return sortOrder < 0 ? 1 : -1;
+              if (a[sortField] > b[sortField]) return sortOrder < 0 ? -1 : 1;
+              return 0;
+            });
+          } else if (op.type === 'populate') {
+            // Simulate populating agent information
+            results = await Promise.all(results.map(async property => {
+              if (op.path === 'agentId') {
+                const agentQuery = Agent.findById(property.agentId);
+                const agent = await agentQuery.exec();
+
+                if (agent) {
+                  if (op.fields === 'firstName lastName email phone') {
+                    return {
+                      ...property,
+                      agentId: {
+                        _id: agent._id,
+                        firstName: agent.firstName,
+                        lastName: agent.lastName,
+                        email: agent.email,
+                        phone: agent.phone
+                      }
+                    };
+                  } else if (op.fields === 'firstName lastName email phone bio') {
+                    return {
+                      ...property,
+                      agentId: {
+                        _id: agent._id,
+                        firstName: agent.firstName,
+                        lastName: agent.lastName,
+                        email: agent.email,
+                        phone: agent.phone,
+                        bio: agent.bio
+                      }
+                    };
+                  }
+                }
+              }
+              return property;
+            }));
+          }
+        }
+
+        return results;
+      },
+
+      limit: function(count) {
+        this._operations.push({ type: 'limit', value: count });
+        return this;
+      },
+
+      skip: function(count) {
+        this._operations.push({ type: 'skip', value: count });
+        return this;
+      },
+
+      sort: function(sortOptions) {
+        this._operations.push({ type: 'sort', value: sortOptions });
+        return this;
+      },
+
+      populate: function(path, fields) {
+        this._operations.push({ type: 'populate', path, fields });
+        return this;
+      },
+
+      select: function(fields) {
+        // For properties, we don't typically need to select specific fields to exclude
+        // Just return the same object for chaining
+        return this;
+      }
+    };
+
+    return queryObj;
+  }
+
+  findById(id) {
+    // Return a query-like object that supports method chaining
+    const queryObj = {
+      _id: id,
+      _operations: [],
+
+      exec: async () => {
+        let result = memoryDB.findPropertyById(id);
+
+        // Process operations in order
+        for (const op of queryObj._operations) {
+          if (op.type === 'populate') {
+            if (op.path === 'agentId' && result) {
+              const agentQuery = Agent.findById(result.agentId);
+              const agent = await agentQuery.exec();
+
+              if (agent) {
+                if (op.fields === 'firstName lastName email phone bio') {
+                  result = {
+                    ...result,
+                    agentId: {
+                      _id: agent._id,
+                      firstName: agent.firstName,
+                      lastName: agent.lastName,
+                      email: agent.email,
+                      phone: agent.phone,
+                      bio: agent.bio
+                    }
+                  };
+                } else if (op.fields === 'firstName lastName email phone') {
+                  result = {
+                    ...result,
                     agentId: {
                       _id: agent._id,
                       firstName: agent.firstName,
@@ -36,34 +143,46 @@ class PropertyModel {
                     }
                   };
                 }
-                return property;
               }
-              return property;
             }
-          };
-        });
+          }
+        }
 
-        resolve(populatedResults);
-      }, 0);
-    });
+        return result;
+      },
+
+      populate: function(path, fields) {
+        this._operations.push({ type: 'populate', path, fields });
+        return this;
+      },
+
+      select: function(fields) {
+        // For individual property, we don't typically need to select specific fields to exclude
+        return this;
+      }
+    };
+
+    return queryObj;
   }
 
-  async findById(id) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const result = memoryDB.findPropertyById(id);
+  findOne(query) {
+    // Return a query-like object that supports method chaining
+    const queryObj = {
+      _query: query,
+      _operations: [],
 
-        // Add populate method to simulate Mongoose populate functionality
-        if (result) {
-          result.populate = async function(path, fields) {
-            if (path === 'agentId') {
-              // Simulate populating agent information
-              const Agent = require('./Agent'); // Get the Agent model
-              const agent = await Agent.findById(result.agentId);
+      exec: async () => {
+        let result = memoryDB.findProperties(query)[0] || null;
 
-              if (agent && fields === 'firstName lastName email phone bio') {
-                // Return the property with populated agent info
-                return {
+        // Process populate operations
+        for (const op of queryObj._operations) {
+          if (op.type === 'populate' && result && op.path === 'agentId') {
+            const agentQuery = Agent.findById(result.agentId);
+            const agent = await agentQuery.exec();
+
+            if (agent) {
+              if (op.fields === 'firstName lastName email phone bio') {
+                result = {
                   ...result,
                   agentId: {
                     _id: agent._id,
@@ -74,9 +193,8 @@ class PropertyModel {
                     bio: agent.bio
                   }
                 };
-              } else if (agent && fields === 'firstName lastName email phone') {
-                // Return the property with populated agent info
-                return {
+              } else if (op.fields === 'firstName lastName email phone') {
+                result = {
                   ...result,
                   agentId: {
                     _id: agent._id,
@@ -87,103 +205,126 @@ class PropertyModel {
                   }
                 };
               }
-
-              return result;
             }
-            return result;
-          };
-        }
-
-        resolve(result);
-      }, 0);
-    });
-  }
-
-  async findOne(query) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const results = memoryDB.findProperties(query);
-        resolve(results[0] || null);
-      }, 0);
-    });
-  }
-
-  async findByIdAndUpdate(id, update, options = {}) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const result = memoryDB.updateProperty(id, update);
-        if (options.new) {
-          resolve(result);
-        } else {
-          resolve(options);
-        }
-      }, 0);
-    });
-  }
-
-  async findByIdAndDelete(id) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const result = memoryDB.deleteProperty(id);
-        resolve(result);
-      }, 0);
-    });
-  }
-
-  async create(data) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const result = memoryDB.createProperty(data);
-        resolve(result);
-      }, 0);
-    });
-  }
-
-  async countDocuments(query = {}) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const results = memoryDB.findProperties(query);
-        resolve(results.length);
-      }, 0);
-    });
-  }
-
-  async aggregate(pipeline) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        // Simplified aggregation for demo purposes
-        let results = [...memoryDB.properties];
-
-        for (const stage of pipeline) {
-          if (stage.$match) {
-            // Apply match filter
-            results = memoryDB.findProperties(stage.$match);
-          } else if (stage.$group) {
-            // Simplified group operation
-            const groupedResult = {
-              _id: null,
-              totalProperties: results.length,
-              avgPrice: results.reduce((sum, prop) => sum + prop.price, 0) / results.length || 0,
-              minPrice: Math.min(...results.map(prop => prop.price)),
-              maxPrice: Math.max(...results.map(prop => prop.price)),
-              avgBedrooms: results.reduce((sum, prop) => sum + prop.bedrooms, 0) / results.length || 0,
-              avgBathrooms: results.reduce((sum, prop) => sum + prop.bathrooms, 0) / results.length || 0,
-              avgSquareFeet: results.reduce((sum, prop) => sum + prop.squareFeet, 0) / results.length || 0
-            };
-            results = [groupedResult];
           }
         }
 
-        resolve(results);
-      }, 0);
-    });
+        return result;
+      },
+
+      populate: function(path, fields) {
+        this._operations.push({ type: 'populate', path, fields });
+        return this;
+      },
+
+      select: function(fields) {
+        // For individual property, we don't typically need to select specific fields to exclude
+        return this;
+      }
+    };
+
+    return queryObj;
   }
 
-  // Add select method to simulate Mongoose functionality
-  select(fields) {
-    // This is a placeholder to satisfy the .select() call
-    // In a real implementation, this would handle field selection
-    return this;
+  findByIdAndUpdate(id, update, options = {}) {
+    // Return a query-like object that supports method chaining
+    const queryObj = {
+      _id: id,
+      _update: update,
+      _options: options,
+      _operations: [],
+
+      exec: async () => {
+        const result = memoryDB.updateProperty(id, update);
+        if (options.new) {
+          return result;
+        } else {
+          return update;
+        }
+      },
+
+      populate: function(path, fields) {
+        this._operations.push({ type: 'populate', path, fields });
+        return this;
+      },
+
+      select: function(fields) {
+        // For individual property, we don't typically need to select specific fields to exclude
+        return this;
+      }
+    };
+
+    return queryObj;
+  }
+
+  findByIdAndDelete(id) {
+    // Return a query-like object that supports method chaining
+    const queryObj = {
+      _id: id,
+      _operations: [],
+
+      exec: async () => {
+        return memoryDB.deleteProperty(id);
+      },
+
+      select: function(fields) {
+        // For individual property, we don't typically need to select specific fields to exclude
+        return this;
+      }
+    };
+
+    return queryObj;
+  }
+
+  create(data) {
+    // Return a query-like object that supports method chaining
+    const queryObj = {
+      _data: data,
+      _operations: [],
+
+      exec: async () => {
+        return memoryDB.createProperty(data);
+      },
+
+      select: function(fields) {
+        // For individual property, we don't typically need to select specific fields to exclude
+        return this;
+      }
+    };
+
+    return queryObj;
+  }
+
+  async countDocuments(query = {}) {
+    const results = memoryDB.findProperties(query);
+    return results.length;
+  }
+
+  async aggregate(pipeline) {
+    // Simplified aggregation for demo purposes
+    let results = [...memoryDB.properties];
+
+    for (const stage of pipeline) {
+      if (stage.$match) {
+        // Apply match filter
+        results = memoryDB.findProperties(stage.$match);
+      } else if (stage.$group) {
+        // Simplified group operation
+        const groupedResult = {
+          _id: null,
+          totalProperties: results.length,
+          avgPrice: results.reduce((sum, prop) => sum + prop.price, 0) / results.length || 0,
+          minPrice: Math.min(...results.map(prop => prop.price)),
+          maxPrice: Math.max(...results.map(prop => prop.price)),
+          avgBedrooms: results.reduce((sum, prop) => sum + prop.bedrooms, 0) / results.length || 0,
+          avgBathrooms: results.reduce((sum, prop) => sum + prop.bathrooms, 0) / results.length || 0,
+          avgSquareFeet: results.reduce((sum, prop) => sum + prop.squareFeet, 0) / results.length || 0
+        };
+        results = [groupedResult];
+      }
+    }
+
+    return results;
   }
 }
 
