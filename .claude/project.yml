@@ -1,0 +1,95 @@
+# Claude Project Configuration for Property Real Estate Agent
+
+name: Property Real Estate Agent
+version: 1.0.0
+description: AI-powered real estate property management system with standalone capabilities
+
+settings:
+  model: qw/qwen3-coder-plus
+  temperature: 0.7
+  max_tokens: 4096
+
+directories:
+  - src/
+  - models/
+  - routes/
+  - controllers/
+  - services/
+  - middleware/
+  - utils/
+  - config/
+  - mcp/
+  - integration/
+
+files:
+  exclude:
+    - node_modules/
+    - dist/
+    - build/
+    - .git/
+    - .env
+    - .env.local
+    - .env.production
+    - logs/
+    - uploads/
+    - coverage/
+    - .nyc_output/
+
+commands:
+  test: npm test
+  build: npm run build
+  start: npm start
+  dev: npm run dev
+
+hooks:
+  pre_commit: npm test
+  post_merge: npm install
+
+conventions:
+  javascript:
+    - Use camelCase for variables and functions
+    - Use PascalCase for classes and constructors
+    - Use UPPER_SNAKE_CASE for constants
+    - Follow Airbnb JavaScript Style Guide
+    - Use JSDoc for public functions
+
+  project_structure:
+    - models/: Database schemas and models
+    - routes/: API route definitions
+    - controllers/: Request handling logic
+    - services/: Business logic and external integrations
+    - middleware/: Custom middleware functions
+    - utils/: Utility functions and helpers
+    - config/: Configuration files
+    - mcp/: Model Context Protocol implementations
+    - integration/: Integration layers
+
+security:
+  sensitive_files:
+    - .env
+    - config/database.js
+    - private keys
+  review_required: true
+
+ai_assistants:
+  - name: Property Expert
+    role: Real estate property specialist
+    capabilities:
+      - Property valuation
+      - Market analysis
+      - Agent recommendations
+      - Transaction guidance
+    model: qw/qwen3-coder-plus
+
+features:
+  primary:
+    - Property listing management
+    - Real estate transaction support
+    - Market analysis tools
+    - Agent-client matching
+    - AI-powered recommendations
+  secondary:
+    - Document management
+    - Scheduling integration
+    - Notification systems
+    - Reporting tools

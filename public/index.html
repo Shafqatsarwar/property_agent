@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Real Estate Agent UI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>PropertyParams Real Estate Agent</h1>
+            <p>AI-powered property management system with standalone capabilities</p>
+        </header>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2>Agent Interaction</h2>
+
+                <div class="prebuilt-prompts">
+                    <h3>Try Pre-built Prompts:</h3>
+                    <div class="prompt-buttons">
+                        <button class="prompt-btn" onclick="loadPrompt('Find properties under $500,000 with 3+ bedrooms in Seattle')">Seattle Homes Under $500K</button>
+                        <button class="prompt-btn" onclick="loadPrompt('Show me commercial properties in downtown area')">Commercial Properties</button>
+                        <button class="prompt-btn" onclick="loadPrompt('Analyze the current market trends in Austin, TX')">Market Analysis</button>
+                        <button class="prompt-btn" onclick="loadPrompt('Recommend an agent specializing in luxury homes')">Agent Recommendation</button>
+                        <button class="prompt-btn" onclick="loadPrompt('Value this property: 4BR, 2BA, 2500 sq ft, built in 2015, located in Denver')">Property Valuation</button>
+                        <button class="prompt-btn" onclick="loadPrompt('Show properties with pool and garage')">Properties with Amenities</button>
+                    </div>
+                </div>
+
+                <div class="query-input">
+                    <label for="user-query">Your Query:</label>
+                    <textarea
+                        id="user-query"
+                        placeholder="Ask about properties, agents, market trends, valuations, or recommendations..."
+                        rows="3"
+                    ></textarea>
+                    <small>Hint: You can ask for property searches, agent recommendations, market analysis, property valuations, or general real estate advice</small>
+                </div>
+
+                <div class="controls">
+                    <button id="submit-btn" onclick="submitQuery()">Submit Query</button>
+                    <button id="clear-btn" onclick="clearChat()">Clear Chat</button>
+                    <select id="agent-mode">
+                        <option value="auto">Auto (AI if available, otherwise standalone)</option>
+                        <option value="standalone">Standalone Mode</option>
+                        <option value="ai">AI-Assisted Mode</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="response-section">
+                <h2>Agent Response</h2>
+                <div id="response-container" class="response-container">
+                    <div class="welcome-message">
+                        <h3>Welcome to the Property Real Estate Agent!</h3>
+                        <p>I can help you with:</p>
+                        <ul>
+                            <li>Property searches and recommendations</li>
+                            <li>Market analysis and trends</li>
+                            <li>Property valuations</li>
+                            <li>Agent recommendations</li>
+                            <li>General real estate advice</li>
+                        </ul>
+                        <p>Select a pre-built prompt or type your own query above.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="capabilities-section">
+            <h2>System Capabilities</h2>
+            <div class="capabilities-grid">
+                <div class="capability-card">
+                    <h3>🔍 Property Search</h3>
+                    <p>Find properties by location, price, type, and features</p>
+                </div>
+                <div class="capability-card">
+                    <h3>🏢 Agent Matching</h3>
+                    <p>Connect with specialized real estate agents</p>
+                </div>
+                <div class="capability-card">
+                    <h3>📊 Market Analysis</h3>
+                    <p>Get insights on market trends and conditions</p>
+                </div>
+                <div class="capability-card">
+                    <h3>💰 Valuation Tools</h3>
+                    <p>Estimate property values using comparable sales</p>
+                </div>
+                <div class="capability-card">
+                    <h3>🤖 AI Assistance</h3>
+                    <p>Natural language processing when available</p>
+                </div>
+                <div class="capability-card">
+                    <h3>⚙️ Standalone Mode</h3>
+                    <p>Fully functional without AI services</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
