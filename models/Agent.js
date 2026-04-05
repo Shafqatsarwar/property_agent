@@ -71,55 +71,53 @@ class AgentModel {
   }
 
   async findOne(query) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        let result;
-        if (query.email) {
-          result = memoryDB.findAgentByEmail(query.email);
-        } else {
-          const results = memoryDB.findAgents(query);
-          result = results[0] || null;
-        }
+    let result;
+    if (query.email) {
+      result = memoryDB.findAgentByEmail(query.email);
+    } else {
+      const results = memoryDB.findAgents(query);
+      result = results[0] || null;
+    }
 
-        // Add select method to the result object to simulate Mongoose functionality
-        if (result) {
-          result.select = function(fields) {
-            if (fields === '-password') {
-              const { password, ...withoutPassword } = result;
-              return withoutPassword;
-            }
-            return result;
-          };
+    // Return an object that simulates Mongoose document with select method
+    if (result) {
+      return {
+        ...result,
+        select: function(fields) {
+          if (fields === '-password') {
+            const { password, ...withoutPassword } = result;
+            return withoutPassword;
+          }
+          return result;
         }
-
-        resolve(result);
-      }, 0);
-    });
+      };
+    }
+    return null;
   }
 
   async findByIdAndUpdate(id, update, options = {}) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const result = memoryDB.updateAgent(id, update);
+    const result = memoryDB.updateAgent(id, update);
 
-        // Add select method to the result object to simulate Mongoose functionality
-        if (result) {
-          result.select = function(fields) {
-            if (fields === '-password') {
-              const { password, ...withoutPassword } = result;
-              return withoutPassword;
-            }
-            return result;
-          };
+    // Return an object that simulates Mongoose document with select method
+    if (result) {
+      const resultWithSelect = {
+        ...result,
+        select: function(fields) {
+          if (fields === '-password') {
+            const { password, ...withoutPassword } = result;
+            return withoutPassword;
+          }
+          return result;
         }
+      };
 
-        if (options.new) {
-          resolve(result);
-        } else {
-          resolve(update);
-        }
-      }, 0);
-    });
+      if (options.new) {
+        return resultWithSelect;
+      } else {
+        return update;
+      }
+    }
+    return null;
   }
 
   async create(data) {
